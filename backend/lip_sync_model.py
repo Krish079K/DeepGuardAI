@@ -112,14 +112,14 @@ def _audio_energy_envelope(video_path: str, seq_len: int = 16,
         tmp_wav = tmp.name
     try:
         r = subprocess.run(
-            ["ffmpeg", "-y", "-i", video_path, "-t", "15",
+            ["ffmpeg", "-y", "-i", video_path, "-t", "6",
              "-vn", "-acodec", "pcm_s16le", "-ar", str(sr), "-ac", "1",
              tmp_wav, "-loglevel", "error"],
-            capture_output=True, timeout=25
+            capture_output=True, timeout=12
         )
         if r.returncode != 0 or not os.path.exists(tmp_wav):
             return np.zeros(seq_len, dtype=np.float32)
-        y, _ = librosa.load(tmp_wav, sr=sr, mono=True, duration=15)
+        y, _ = librosa.load(tmp_wav, sr=sr, mono=True, duration=6)
 
         hop  = max(1, len(y) // seq_len)
         rms  = librosa.feature.rms(y=y, hop_length=hop)[0]

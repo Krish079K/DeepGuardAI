@@ -11,6 +11,7 @@ Usage:
 """
 
 import concurrent.futures
+import gc
 import logging
 import time
 from pathlib import Path
@@ -76,23 +77,15 @@ class DeepfakeDetector:
 
         logger.info("Starting analysis: %s", video_path)
 
-        # ── Run branches efficiently (max 2 concurrent workers to avoid CPU thrashing) ───
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-
-            fut_visual   = pool.submit(analyze_visual,   video_path,
-                                        self.visual_model_path)
-            fut_audio    = pool.submit(analyze_audio,    video_path,
-                                        self.audio_model_path)
-            fut_lip_sync = pool.submit(analyze_lip_sync, video_path,
-                                        self.lip_sync_model_path)
-            fut_temporal = pool.submit(analyze_temporal, video_path,
-                                        self.temporal_model_path)
-
-            # Collect results (exceptions are surfaced here)
-            visual_result   = self._safe_get(fut_visual,   "visual",   video_path)
-            audio_result    = self._safe_get(fut_audio,    "audio",    video_path)
-            lip_sync_result = self._safe_get(fut_lip_sync, "lip_sync", video_path)
-            temporal_result = self._safe_get(fut_temporal, "temporal", video_path)
+        # ── Run branches sequentially to stay within 512MB free-tier RAM ──
+        visual_result   = self._safe_call(analyze_visual,   "visual",   video_path, self.visual_model_path)
+        gc.collect()
+        audio_result    = self._safe_call(analyze_audio,    "audio",    video_path, self.audio_model_path)
+        gc.collect()
+        lip_sync_result = self._safe_call(analyze_lip_sync, "lip_sync", video_path, self.lip_sync_model_path)
+        gc.collect()
+        temporal_result = self._safe_call(analyze_temporal, "temporal", video_path, self.temporal_model_path)
+        gc.collect()
 
         logger.info("Branch scores → visual=%.3f  audio=%.3f  lip=%.3f  temp=%.3f",
                     visual_result.get("visual_score", -1),
@@ -124,6 +117,16 @@ class DeepfakeDetector:
         }
 
     # ─────────────────────────────────────────────────────────────────────
+    @staticmethod
+    def _safe_call(fn, branch: str, video_path: str, model_path) -> dict:
+        """Call a branch function and return a safe fallback on exception."""
+        try:
+            return fn(video_path, model_path)
+        except Exception as exc:
+            logger.error("Branch '%s' failed for %s: %s", branch, video_path, exc)
+            fallback_key = f"{branch}_score" if branch != "lip_sync" else "lip_sync_score"
+            return {fallback_key: 0.5, "error": str(exc), "method": "fallback"}
+
     @staticmethod
     def _safe_get(future: concurrent.futures.Future,
                   branch: str, video_path: str) -> dict:

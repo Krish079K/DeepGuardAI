@@ -108,19 +108,14 @@ def _per_frame_features(frame: np.ndarray, prev_frame: np.ndarray | None,
         else:
             feats[0:3] = 0.0
 
-        # Optical flow
-        try:
-            if prev_crop.shape == face_gray.shape:
-                flow = cv2.calcOpticalFlowFarneback(
-                    prev_crop.astype(np.uint8),
-                    face_gray.astype(np.uint8),
-                    None, 0.5, 3, 15, 3, 5, 1.2, 0,
-                )
-                mag = np.sqrt(flow[..., 0]**2 + flow[..., 1]**2)
-                feats[9]  = float(mag.mean())
-                feats[10] = float(mag.std())
-        except Exception:
-            pass
+        # Optical flow skipped (too RAM-heavy for 512MB free tier)
+        # Use gradient-difference proxy instead (cheap, similar signal)
+        if prev_crop.shape == face_gray.shape:
+            gx1 = cv2.Sobel(face_gray.astype(np.uint8), cv2.CV_32F, 1, 0, ksize=3)
+            gx2 = cv2.Sobel(prev_crop.astype(np.uint8), cv2.CV_32F, 1, 0, ksize=3)
+            motion_proxy = np.abs(gx1 - gx2)
+            feats[9]  = float(motion_proxy.mean())
+            feats[10] = float(motion_proxy.std())
 
         # SSIM proxy
         if prev_crop.shape == face_gray.shape:
