@@ -230,17 +230,7 @@ def _temporal_heuristic(feature_seq: np.ndarray) -> float:
 # Main analysis function
 # ─────────────────────────────────────────────
 def analyze_temporal(video_path: str, model_path: str | None = None,
-                     num_frames: int = 64) -> dict:
-    """
-    Analyse temporal consistency of a video for deepfake indicators.
-
-    Returns
-    -------
-    dict with keys:
-        temporal_score   – fake probability in [0, 1]
-        frames_analysed  – how many frames were processed
-        method           – "lstm_model" | "heuristic"
-    """
+                     num_frames: int = 10) -> dict:
     video_path = str(video_path)
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -251,6 +241,7 @@ def analyze_temporal(video_path: str, model_path: str | None = None,
         cap.release()
         return {"temporal_score": 0.5, "frames_analysed": total, "method": "no_frames"}
 
+    num_frames = min(num_frames, 10)
     indices = np.linspace(0, total - 1, num=min(num_frames, total), dtype=int)
 
     face_cascade = cv2.CascadeClassifier(
@@ -266,18 +257,30 @@ def analyze_temporal(video_path: str, model_path: str | None = None,
         if not ret or frame is None:
             continue
 
+        # Resize to max 480px
+        if frame.shape[1] > 480:
+            scale = 480.0 / frame.shape[1]
+            frame = cv2.resize(frame, (480, int(frame.shape[0] * scale)))
+
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1,
-                                              minNeighbors=5, minSize=(60, 60))
+        fh, fw = gray.shape
+        scale_det = 240.0 / max(fw, fh) if max(fw, fh) > 240 else 1.0
+        small_gray = cv2.resize(gray, (int(fw * scale_det), int(fh * scale_det))) if scale_det < 1.0 else gray
+        faces = face_cascade.detectMultiScale(small_gray, scaleFactor=1.2,
+                                              minNeighbors=4, minSize=(24, 24))
         face_bbox = None
         if len(faces) > 0:
-            face_bbox = tuple(max(faces, key=lambda f: f[2] * f[3]).tolist())
+            bx, by, bw, bh = max(faces, key=lambda f: f[2] * f[3])
+            if scale_det < 1.0:
+                bx, by, bw, bh = int(bx / scale_det), int(by / scale_det), int(bw / scale_det), int(bh / scale_det)
+            face_bbox = (bx, by, bw, bh)
 
         feats = _per_frame_features(frame, prev_frame, face_bbox=face_bbox)
         frames_data.append(feats)
         prev_frame = frame
 
     cap.release()
+
 
     if not frames_data:
         return {"temporal_score": 0.5, "frames_analysed": 0, "method": "no_frames"}

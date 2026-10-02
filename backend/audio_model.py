@@ -55,11 +55,13 @@ class AudioMLP(nn.Module):
 def _extract_audio(video_path: str, out_wav: str, sr: int = 16000) -> bool:
     try:
         cmd = ["ffmpeg", "-y", "-i", video_path,
+               "-t", "15",
                "-vn", "-acodec", "pcm_s16le",
                "-ar", str(sr), "-ac", "1",
                out_wav, "-loglevel", "error"]
-        r = subprocess.run(cmd, capture_output=True, timeout=120)
+        r = subprocess.run(cmd, capture_output=True, timeout=25)
         return r.returncode == 0 and os.path.exists(out_wav)
+
     except FileNotFoundError:
         return False
     except Exception as e:
@@ -119,26 +121,28 @@ def _extract_features(y: np.ndarray, sr: int) -> np.ndarray:
 # ─────────────────────────────────────────────
 def _heuristic_audio_score(y: np.ndarray, sr: int) -> float:
     try:
-        f0, voiced_flag, _ = librosa.pyin(y, fmin=50, fmax=500,
-                                           sr=sr, frame_length=2048)
-        voiced_f0 = f0[voiced_flag] if voiced_flag is not None else np.array([])
-        pitch_std   = float(np.std(voiced_f0)) if len(voiced_f0) > 5 else 20.0
-        pitch_score = max(0.0, 1.0 - pitch_std / 30.0)
+        # Fast spectral centroid & zero-crossing rate (< 0.05s)
+        sc = librosa.feature.spectral_centroid(y=y, sr=sr)
+        sc_std = float(np.std(sc))
+        zcr = librosa.feature.zero_crossing_rate(y)
+        zcr_mean = float(np.mean(zcr))
 
-        intervals      = librosa.effects.split(y, top_db=30)
-        voiced_samples = sum(e - s for s, e in intervals)
-        silence_ratio  = 1.0 - voiced_samples / (len(y) + 1e-8)
-        silence_score  = float(np.clip(silence_ratio * 2.0, 0.0, 1.0))
+        # Audio energy variation
+        rms = librosa.feature.rms(y=y)
+        rms_diff = float(np.mean(np.abs(np.diff(rms))))
 
-        spec = np.abs(librosa.stft(y))
-        smoothness = float(np.mean(np.diff(spec, axis=1) ** 2))
-        smooth_score = max(0.0, 1.0 - min(smoothness / 0.5, 1.0))
-
-        return float(np.clip(0.4*pitch_score + 0.3*silence_score + 0.3*smooth_score,
-                             0.0, 1.0))
+        # High-frequency robotic stability check
+        score = float(np.clip(
+            0.4 * (1.0 - min(sc_std / 900.0, 1.0)) +
+            0.3 * (1.0 - min(zcr_mean / 0.18, 1.0)) +
+            0.3 * (1.0 - min(rms_diff / 0.025, 1.0)),
+            0.05, 0.95
+        ))
+        return score
     except Exception as exc:
         logger.warning("Heuristic audio score failed: %s", exc)
         return 0.5
+
 
 
 # ─────────────────────────────────────────────

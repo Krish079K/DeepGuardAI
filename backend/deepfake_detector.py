@@ -76,8 +76,9 @@ class DeepfakeDetector:
 
         logger.info("Starting analysis: %s", video_path)
 
-        # ── Run all four branches in parallel (thread pool) ───────────────
-        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        # ── Run branches efficiently (max 2 concurrent workers to avoid CPU thrashing) ───
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+
             fut_visual   = pool.submit(analyze_visual,   video_path,
                                         self.visual_model_path)
             fut_audio    = pool.submit(analyze_audio,    video_path,

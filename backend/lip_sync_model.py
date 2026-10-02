@@ -53,7 +53,8 @@ class LipSyncLSTM(nn.Module):
 # ─────────────────────────────────────────────
 # Signal extractors
 # ─────────────────────────────────────────────
-def _mouth_motion_signal(video_path: str, seq_len: int = SEQ_LEN) -> np.ndarray:
+def _mouth_motion_signal(video_path: str, seq_len: int = 16) -> np.ndarray:
+    seq_len = min(seq_len, 16)
     cap    = cv2.VideoCapture(video_path)
     total  = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     if total < 2:
@@ -69,11 +70,17 @@ def _mouth_motion_signal(video_path: str, seq_len: int = SEQ_LEN) -> np.ndarray:
     for idx in indices:
         cap.set(cv2.CAP_PROP_POS_FRAMES, int(idx))
         ret, frame = cap.read()
-        if not ret:
+        if not ret or frame is None:
             motion.append(0.0)
             continue
-        gray  = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = cascade.detectMultiScale(gray, 1.1, 5, minSize=(60, 60))
+        
+        # Fast downscaled face and mouth detection
+        fh, fw = frame.shape[:2]
+        scale = 240.0 / max(fw, fh) if max(fw, fh) > 240 else 1.0
+        small = cv2.resize(frame, (int(fw * scale), int(fh * scale))) if scale < 1.0 else frame
+        gray  = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+        faces = cascade.detectMultiScale(gray, 1.2, 4, minSize=(24, 24))
+
         if len(faces) > 0:
             x, y, w, h = max(faces, key=lambda f: f[2]*f[3])
             mouth = gray[y+int(h*0.6):y+h, x+int(w*0.1):x+w-int(w*0.1)]
@@ -98,20 +105,22 @@ def _mouth_motion_signal(video_path: str, seq_len: int = SEQ_LEN) -> np.ndarray:
     return arr / mx if mx > 1e-6 else arr
 
 
-def _audio_energy_envelope(video_path: str, seq_len: int = SEQ_LEN,
+def _audio_energy_envelope(video_path: str, seq_len: int = 16,
                             sr: int = 16000) -> np.ndarray:
+    seq_len = min(seq_len, 16)
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
         tmp_wav = tmp.name
     try:
         r = subprocess.run(
-            ["ffmpeg", "-y", "-i", video_path,
+            ["ffmpeg", "-y", "-i", video_path, "-t", "15",
              "-vn", "-acodec", "pcm_s16le", "-ar", str(sr), "-ac", "1",
              tmp_wav, "-loglevel", "error"],
-            capture_output=True, timeout=120
+            capture_output=True, timeout=25
         )
         if r.returncode != 0 or not os.path.exists(tmp_wav):
             return np.zeros(seq_len, dtype=np.float32)
-        y, _ = librosa.load(tmp_wav, sr=sr, mono=True)
+        y, _ = librosa.load(tmp_wav, sr=sr, mono=True, duration=15)
+
         hop  = max(1, len(y) // seq_len)
         rms  = librosa.feature.rms(y=y, hop_length=hop)[0]
         x_old = np.linspace(0, 1, len(rms))

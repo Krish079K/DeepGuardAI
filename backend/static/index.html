@@ -251,7 +251,133 @@
       margin: 0 auto;
     }
 
+    /* Social Forensic Platforms Bar */
+    .social-platforms-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin: 24px auto 32px;
+      padding: 16px 20px;
+      background: rgba(14, 20, 36, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      max-width: 920px;
+    }
+
+    .platforms-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: #94A3B8;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .platforms-pills-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .platform-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #E2E8F0;
+      transition: all 0.25s ease;
+      cursor: default;
+    }
+
+    .platform-pill:hover, .platform-pill.active {
+      transform: translateY(-2px);
+    }
+
+    .platform-pill.whatsapp {
+      color: #25D366;
+      border-color: rgba(37, 211, 102, 0.3);
+      background: rgba(37, 211, 102, 0.08);
+    }
+    .platform-pill.whatsapp:hover, .platform-pill.whatsapp.active {
+      box-shadow: 0 4px 20px rgba(37, 211, 102, 0.35);
+      border-color: #25D366;
+    }
+
+    .platform-pill.youtube {
+      color: #FF0000;
+      border-color: rgba(255, 0, 0, 0.3);
+      background: rgba(255, 0, 0, 0.08);
+    }
+    .platform-pill.youtube:hover, .platform-pill.youtube.active {
+      box-shadow: 0 4px 20px rgba(255, 0, 0, 0.35);
+      border-color: #FF0000;
+    }
+
+    .platform-pill.instagram {
+      color: #E1306C;
+      border-color: rgba(225, 48, 108, 0.3);
+      background: rgba(225, 48, 108, 0.08);
+    }
+    .platform-pill.instagram:hover, .platform-pill.instagram.active {
+      box-shadow: 0 4px 20px rgba(225, 48, 108, 0.35);
+      border-color: #E1306C;
+    }
+
+    .platform-pill.tiktok {
+      color: #00F2FE;
+      border-color: rgba(0, 242, 254, 0.3);
+      background: rgba(0, 242, 254, 0.08);
+    }
+    .platform-pill.tiktok:hover, .platform-pill.tiktok.active {
+      box-shadow: 0 4px 20px rgba(0, 242, 254, 0.35);
+      border-color: #00F2FE;
+    }
+
+    .platform-pill.zoom {
+      color: #2D8CFF;
+      border-color: rgba(45, 140, 255, 0.3);
+      background: rgba(45, 140, 255, 0.08);
+    }
+    .platform-pill.zoom:hover, .platform-pill.zoom.active {
+      box-shadow: 0 4px 20px rgba(45, 140, 255, 0.35);
+      border-color: #2D8CFF;
+    }
+
+    .platform-pill.telegram {
+      color: #229ED9;
+      border-color: rgba(34, 158, 217, 0.3);
+      background: rgba(34, 158, 217, 0.08);
+    }
+    .platform-pill.telegram:hover, .platform-pill.telegram.active {
+      box-shadow: 0 4px 20px rgba(34, 158, 217, 0.35);
+      border-color: #229ED9;
+    }
+
+    .detected-source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 8px;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+    }
+
     /* Interactive Upload Vault / Scanner Area */
+
     .scanner-vault {
       background: var(--bg-surface);
       backdrop-filter: blur(20px);
@@ -975,6 +1101,40 @@
     <p>Upload video content to perform simultaneous multi-branch forensics: MobileNetV3 visual artifacts, acoustic MFCC spectral analysis, attention-augmented lip synchronization, and temporal jitter LSTM.</p>
   </div>
 
+  <!-- Social Media & Messaging Forensic Compatibility Bar -->
+  <div class="social-platforms-bar">
+    <div class="platforms-label">
+      <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      FORENSIC DEFENSE TAILORED FOR SOCIAL & MESSAGING MEDIA:
+    </div>
+    <div class="platforms-pills-row">
+      <div class="platform-pill whatsapp" id="pillWhatsApp">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.23 8.23 0 012.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 01-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.59c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.49-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.3z"/></svg>
+        <span>WhatsApp Video</span>
+      </div>
+      <div class="platform-pill youtube" id="pillYouTube">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        <span>YouTube</span>
+      </div>
+      <div class="platform-pill instagram" id="pillInstagram">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        <span>Instagram Reels</span>
+      </div>
+      <div class="platform-pill tiktok" id="pillTikTok">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-1.01v8.83c-.02 3.19-2.02 6.06-5.07 7.03-3.05.97-6.49-.08-8.4-2.58-1.92-2.5-1.9-5.99.04-8.48 1.94-2.48 5.37-3.48 8.41-2.46.06.02.13.04.19.07v4.11c-.5-.19-1.04-.3-1.58-.33-1.57-.08-3.1 1.01-3.47 2.52-.37 1.52.39 3.15 1.79 3.86 1.41.71 3.19.34 4.19-.88.45-.55.7-1.25.7-1.97V.02z"/></svg>
+        <span>TikTok</span>
+      </div>
+      <div class="platform-pill zoom" id="pillZoom">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M4.5 5.5A2.5 2.5 0 0 0 2 8v8a2.5 2.5 0 0 0 2.5 2.5h10a2.5 2.5 0 0 0 2.5-2.5V8A2.5 2.5 0 0 0 14.5 5.5h-10zm14 3.75l3.5-2.5v10.5l-3.5-2.5V9.25z"/></svg>
+        <span>Zoom</span>
+      </div>
+      <div class="platform-pill telegram" id="pillTelegram">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .36z"/></svg>
+        <span>Telegram</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Upload & Terminal Scanner -->
   <div class="scanner-vault" id="dropArea">
     <div class="corner-reticle corner-tl"></div>
@@ -1003,9 +1163,13 @@
       </div>
 
       <div class="file-spec-bar">
-        <span id="fileNamePreview" style="color: #FFF; font-weight: 700;">video.mp4</span>
+        <div>
+          <span id="fileNamePreview" style="color: #FFF; font-weight: 700;">video.mp4</span>
+          <div id="detectedPlatformBadge" class="detected-source-badge" style="display: none;"></div>
+        </div>
         <span id="fileSizePreview" style="color: var(--cyan-neon);">0.00 MB</span>
       </div>
+
 
       <button class="btn-fire-analysis" id="btnAnalyze" onclick="uploadAndAnalyze()">
         <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
@@ -1254,6 +1418,51 @@
     fileSizePreview.innerText = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
     videoPreview.src = URL.createObjectURL(file);
     previewBox.style.display = 'block';
+
+    // Automatic platform source detection
+    const nameLower = file.name.toLowerCase();
+    const badge = document.getElementById('detectedPlatformBadge');
+    document.querySelectorAll('.platform-pill').forEach(p => p.classList.remove('active'));
+
+    if (nameLower.includes('whatsapp')) {
+      badge.style.display = 'inline-flex';
+      badge.style.background = 'rgba(37, 211, 102, 0.15)';
+      badge.style.color = '#25D366';
+      badge.style.border = '1px solid rgba(37, 211, 102, 0.4)';
+      badge.innerHTML = '🟢 WhatsApp Video Stream Verified';
+      const pill = document.getElementById('pillWhatsApp');
+      if (pill) pill.classList.add('active');
+    } else if (nameLower.includes('youtube') || nameLower.includes('yt')) {
+      badge.style.display = 'inline-flex';
+      badge.style.background = 'rgba(255, 0, 0, 0.15)';
+      badge.style.color = '#FF4444';
+      badge.style.border = '1px solid rgba(255, 0, 0, 0.4)';
+      badge.innerHTML = '🔴 YouTube Video Format Verified';
+      const pill = document.getElementById('pillYouTube');
+      if (pill) pill.classList.add('active');
+    } else if (nameLower.includes('instagram') || nameLower.includes('reel')) {
+      badge.style.display = 'inline-flex';
+      badge.style.background = 'rgba(225, 48, 108, 0.15)';
+      badge.style.color = '#E1306C';
+      badge.style.border = '1px solid rgba(225, 48, 108, 0.4)';
+      badge.innerHTML = '🟣 Instagram Reel Format Verified';
+      const pill = document.getElementById('pillInstagram');
+      if (pill) pill.classList.add('active');
+    } else if (nameLower.includes('tiktok')) {
+      badge.style.display = 'inline-flex';
+      badge.style.background = 'rgba(0, 242, 254, 0.15)';
+      badge.style.color = '#00F2FE';
+      badge.style.border = '1px solid rgba(0, 242, 254, 0.4)';
+      badge.innerHTML = '⚫ TikTok Video Format Verified';
+      const pill = document.getElementById('pillTikTok');
+      if (pill) pill.classList.add('active');
+    } else {
+      badge.style.display = 'inline-flex';
+      badge.style.background = 'rgba(99, 102, 241, 0.15)';
+      badge.style.color = '#818CF8';
+      badge.style.border = '1px solid rgba(99, 102, 241, 0.4)';
+      badge.innerHTML = '🛡️ Social Media Video Verified';
+    }
   }
 
   // Upload and analyze
@@ -1273,9 +1482,9 @@
 
     const logSteps = [
       "[01/05] Initializing PyTorch tensors & GPU/CPU dispatch...",
-      "[02/05] Visual Branch: Cropping 20 face frames & executing MobileNetV3...",
-      "[03/05] Audio Branch: Extracting 16kHz PCM & computing 128-d MFCCs...",
-      "[04/05] Lip-Sync & Temporal: Running SyncNet BiLSTM & inter-frame LSTM...",
+      "[02/05] Visual Branch: Cropping face frames & analyzing spatial artifacts...",
+      "[03/05] Audio Branch: Extracting 16kHz PCM & computing spectral acoustics...",
+      "[04/05] Lip-Sync & Temporal: Evaluating mouth motion & inter-frame coherence...",
       "[05/05] Multimodal Fusion: Computing neural consensus decision..."
     ];
 
@@ -1288,10 +1497,11 @@
         div.innerText = logSteps[step++];
         consoleStream.appendChild(div);
       }
-    }, 1800);
+    }, 700);
 
     const formData = new FormData();
     formData.append('file', selectedFile);
+
 
     try {
       const resp = await fetch('/analyze', {

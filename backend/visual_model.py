@@ -131,12 +131,18 @@ def analyze_visual(video_path: str, model_path: str | None = None,
         cap.release()
         raise ValueError("Video has no frames.")
 
+    # Extract up to 8 evenly spaced frames
+    num_frames = min(num_frames, 8)
     indices = np.linspace(0, total - 1, num=min(num_frames, total), dtype=int)
     frames  = []
     for idx in indices:
         cap.set(cv2.CAP_PROP_POS_FRAMES, int(idx))
         ret, fr = cap.read()
         if ret and fr is not None:
+            # Resize frame to max width 640 to prevent massive memory/CPU usage
+            if fr.shape[1] > 640:
+                scale = 640.0 / fr.shape[1]
+                fr = cv2.resize(fr, (640, int(fr.shape[0] * scale)))
             frames.append(fr)
     cap.release()
 
@@ -161,19 +167,25 @@ def analyze_visual(video_path: str, model_path: str | None = None,
             net = None
 
     # ── Score each frame ─────────────────────────────────────────────────
-    cascade       = cv2.CascadeClassifier(
+    cascade = cv2.CascadeClassifier(
         cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
     )
     frame_scores  = []
     faces_detected = 0
 
     for frame in frames:
-        gray  = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = cascade.detectMultiScale(gray, 1.1, 5, minSize=(60, 60))
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # Fast face detection on downscaled thumbnail
+        fh, fw = gray.shape
+        scale_det = 240.0 / max(fw, fh) if max(fw, fh) > 240 else 1.0
+        small_gray = cv2.resize(gray, (int(fw * scale_det), int(fh * scale_det))) if scale_det < 1.0 else gray
+        faces = cascade.detectMultiScale(small_gray, 1.2, 4, minSize=(24, 24))
 
         if len(faces) > 0:
             faces_detected += 1
             x, y, w, h = max(faces, key=lambda f: f[2] * f[3])
+            if scale_det < 1.0:
+                x, y, w, h = int(x / scale_det), int(y / scale_det), int(w / scale_det), int(h / scale_det)
             pad_x, pad_y = int(w * 0.10), int(h * 0.10)
             x1 = max(0, x - pad_x);  y1 = max(0, y - pad_y)
             x2 = min(frame.shape[1], x + w + pad_x)
@@ -181,6 +193,7 @@ def analyze_visual(video_path: str, model_path: str | None = None,
             crop = frame[y1:y2, x1:x2]
         else:
             crop = frame
+
 
         if net is not None:
             try:
