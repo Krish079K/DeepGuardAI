@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>DeepGuard AI — Multimodal Deepfake Defense Platform</title>
+  <link rel="icon" type="image/jpeg" href="/static/logo.jpg" />
+  <link rel="apple-touch-icon" href="/static/logo.jpg" />
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -131,22 +133,29 @@
     }
 
     .brand-logo-shield {
-      width: 46px;
-      height: 46px;
+      width: 52px;
+      height: 52px;
       border-radius: 14px;
-      background: linear-gradient(135deg, #4F46E5, #06B6D4);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 24px var(--primary-glow);
+      box-shadow: 0 0 28px rgba(99, 102, 241, 0.6), 0 0 60px rgba(6, 182, 212, 0.2);
       position: relative;
+      overflow: hidden;
+      animation: logoGlow 3s ease-in-out infinite alternate;
     }
 
-    .brand-logo-shield svg {
-      width: 26px;
-      height: 26px;
-      fill: #FFF;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    .brand-logo-shield img {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      object-fit: cover;
+      display: block;
+    }
+
+    @keyframes logoGlow {
+      0%   { box-shadow: 0 0 20px rgba(99, 102, 241, 0.5), 0 0 40px rgba(6, 182, 212, 0.15); }
+      100% { box-shadow: 0 0 36px rgba(99, 102, 241, 0.9), 0 0 70px rgba(6, 182, 212, 0.35); }
     }
 
     .brand-name {
@@ -1081,7 +1090,7 @@
   <header>
     <div class="brand-wrap">
       <div class="brand-logo-shield">
-        <svg viewBox="0 0 24 24"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+        <img src="/static/logo.jpg" alt="DeepGuard AI Logo" onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg,#4F46E5,#06B6D4)'; this.parentElement.innerHTML+='<svg viewBox=\'0 0 24 24\' style=\'width:26px;height:26px;fill:#FFF\'><path d=\'M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z\'/></svg>';" />
       </div>
       <div>
         <div class="brand-name">DEEPGUARD <span>// AI</span> <div class="tag-defense">v1.0</div></div>

@@ -55,11 +55,11 @@ class AudioMLP(nn.Module):
 def _extract_audio(video_path: str, out_wav: str, sr: int = 16000) -> bool:
     try:
         cmd = ["ffmpeg", "-y", "-i", video_path,
-               "-t", "15",
+               "-t", "8",
                "-vn", "-acodec", "pcm_s16le",
                "-ar", str(sr), "-ac", "1",
                out_wav, "-loglevel", "error"]
-        r = subprocess.run(cmd, capture_output=True, timeout=25)
+        r = subprocess.run(cmd, capture_output=True, timeout=15)
         return r.returncode == 0 and os.path.exists(out_wav)
 
     except FileNotFoundError:
@@ -75,12 +75,12 @@ def _extract_audio(video_path: str, out_wav: str, sr: int = 16000) -> bool:
 def _extract_features(y: np.ndarray, sr: int) -> np.ndarray:
     feats = []
 
-    # 40 MFCCs × (mean + std) = 80
-    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
+    # 20 MFCCs × (mean + std) = 40  (was 40×2=80, halved for speed)
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
     feats.extend(np.mean(mfcc, axis=1).tolist())
     feats.extend(np.std(mfcc, axis=1).tolist())
 
-    # Spectral features × 5 × (mean + std) = 10
+    # Fast spectral features: centroid, bandwidth, rolloff, zcr, rms
     for fn in [librosa.feature.spectral_centroid,
                librosa.feature.spectral_bandwidth,
                librosa.feature.spectral_rolloff,
@@ -91,26 +91,8 @@ def _extract_features(y: np.ndarray, sr: int) -> np.ndarray:
     rms = librosa.feature.rms(y=y)
     feats += [float(np.mean(rms)), float(np.std(rms))]
 
-    # Chroma  12 × (mean + std) = 24
-    chroma = librosa.feature.chroma_stft(y=y, sr=sr)
-    feats.extend(np.mean(chroma, axis=1).tolist())
-    feats.extend(np.std(chroma, axis=1).tolist())
-
-    # Spectral contrast  7
-    try:
-        contrast = librosa.feature.spectral_contrast(y=y, sr=sr)
-        feats.extend(np.mean(contrast, axis=1).tolist())
-    except Exception:
-        feats.extend([0.0] * 7)
-
-    # Tonnetz  6
-    try:
-        harm = librosa.effects.harmonic(y)
-        tonnetz = librosa.feature.tonnetz(y=harm, sr=sr)
-        feats.extend(np.mean(tonnetz, axis=1).tolist())
-    except Exception:
-        feats.extend([0.0] * 6)
-
+    # Skip slow chroma/tonnetz/spectral_contrast in cloud inference
+    # Pad to 128 dims with zeros to match trained model input size
     arr = np.array(feats, dtype=np.float32)
     arr = arr[:128] if len(arr) >= 128 else np.pad(arr, (0, 128 - len(arr)))
     return arr
@@ -172,13 +154,13 @@ def analyze_audio(video_path: str, model_path: str | None = None) -> dict:
         ok = _extract_audio(str(video_path), tmp_wav, sr)
         if ok and os.path.exists(tmp_wav):
             try:
-                y, _ = librosa.load(tmp_wav, sr=sr, mono=True, duration=30)
+                y, _ = librosa.load(tmp_wav, sr=sr, mono=True, duration=8)
             except Exception:
                 y = None
         if y is None:
             try:
                 y, _ = librosa.load(str(video_path), sr=sr,
-                                     mono=True, duration=30)
+                                     mono=True, duration=8)
             except Exception:
                 y = None
 

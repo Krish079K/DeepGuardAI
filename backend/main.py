@@ -23,6 +23,7 @@ import uvicorn
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 # ── Ensure the backend directory is on sys.path ──────────────────────────
 sys.path.insert(0, str(Path(__file__).parent))
@@ -58,8 +59,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-UPLOAD_DIR = Path(__file__).parent / "uploads"
-MODELS_DIR = Path(__file__).parent / "models"
+UPLOAD_DIR  = Path(__file__).parent / "uploads"
+MODELS_DIR  = Path(__file__).parent / "models"
+STATIC_DIR  = Path(__file__).parent / "static"
 UPLOAD_DIR.mkdir(exist_ok=True)
 MODELS_DIR.mkdir(exist_ok=True)
 
@@ -68,6 +70,9 @@ detector = DeepfakeDetector(models_dir=str(MODELS_DIR))
 
 # ── DB init ──────────────────────────────────────────────────────────────
 init_db()
+
+# ── Mount static files (logo, favicon, etc.) ─────────────────────────────
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 # ─────────────────────────────────────────────
