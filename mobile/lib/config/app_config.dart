@@ -6,7 +6,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppConfig {
-  static const String defaultUrl = 'http://192.168.1.113:8000';
+  static const String defaultUrl = 'https://deepguardai-3yq7.onrender.com';
   static String _apiBaseUrl = defaultUrl;
 
   static String get apiBaseUrl => _apiBaseUrl;
