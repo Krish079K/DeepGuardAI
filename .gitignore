@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+venv/
+env/
+ENV/
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/deepguard.db
+
+# Flutter & Dart
+.dart_tool/
+.packages
+build/
+.pub-cache/
+.pub/
+*.apk
+*.aab
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,48 @@
+name: deepguard_ai
+description: "DeepGuard AI - Multimodal Deepfake Detection"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # HTTP client
+  http: ^1.2.1
+  
+  # File picking
+  file_picker: ^8.0.0+1
+  
+  # Video player for preview
+  video_player: ^2.8.6
+  
+  # Animations
+  lottie: ^3.1.0
+  
+  # Progress indicators
+  percent_indicator: ^4.2.3
+  
+  # Icons
+  cupertino_icons: ^1.0.6
+  
+  # Shared preferences for config
+  shared_preferences: ^2.2.3
+  
+  # Intl for date formatting
+  intl: ^0.19.0
+  
+  # Path utilities
+  path: ^1.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/

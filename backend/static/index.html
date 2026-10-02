@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DeepGuard AI — Multimodal Deepfake Defense Platform</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #060913;
+      --bg-surface: rgba(14, 20, 36, 0.72);
+      --bg-surface-elevated: rgba(20, 29, 52, 0.85);
+      --border: rgba(99, 120, 180, 0.18);
+      --border-highlight: rgba(120, 140, 255, 0.35);
+      
+      --primary: #6366F1;
+      --primary-neon: #818CF8;
+      --primary-glow: rgba(99, 102, 241, 0.4);
+      
+      --cyan: #06B6D4;
+      --cyan-neon: #22D3EE;
+      --cyan-glow: rgba(6, 182, 212, 0.35);
+      
+      --real: #10B981;
+      --real-glow: rgba(16, 185, 129, 0.4);
+      --real-soft: rgba(16, 185, 129, 0.12);
+      
+      --fake: #F43F5E;
+      --fake-glow: rgba(244, 63, 94, 0.4);
+      --fake-soft: rgba(244, 63, 94, 0.12);
+      
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated Ambient Cyber Grid & Glow */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .ambient-grid {
+      position: absolute;
+      inset: 0;
+      background-size: 50px 50px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      mask-image: radial-gradient(ellipse at 50% 30%, black 40%, transparent 80%);
+    }
+
+    .ambient-orb-1 {
+      position: absolute;
+      top: -150px;
+      left: 10%;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 70%);
+      filter: blur(80px);
+      animation: floatOrb 18s ease-in-out infinite alternate;
+    }
+
+    .ambient-orb-2 {
+      position: absolute;
+      top: 40%;
+      right: -100px;
+      width: 550px;
+      height: 550px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.14) 0%, transparent 70%);
+      filter: blur(90px);
+      animation: floatOrb 14s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(60px, 80px) scale(1.15); }
+    }
+
+    .app-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 24px 80px;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 28px;
+      background: var(--bg-surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      margin-bottom: 36px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-logo-shield {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #4F46E5, #06B6D4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 24px var(--primary-glow);
+      position: relative;
+    }
+
+    .brand-logo-shield svg {
+      width: 26px;
+      height: 26px;
+      fill: #FFF;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .brand-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-name span {
+      background: linear-gradient(90deg, #A5B4FC, #38BDF8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tag-defense {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: var(--primary-neon);
+      text-transform: uppercase;
+    }
+
+    .header-status-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 18px;
+      border-radius: 30px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--real);
+    }
+
+    .pulse-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--real);
+      box-shadow: 0 0 10px var(--real);
+      animation: pulseRadar 2s infinite;
+    }
+
+    @keyframes pulseRadar {
+      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* Hero Headline */
+    .hero-banner {
+      text-align: center;
+      margin: 10px auto 44px;
+      max-width: 860px;
+    }
+
+    .hero-pretitle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--cyan-neon);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+    }
+
+    .hero-banner h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(32px, 5.5vw, 54px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+
+    .hero-banner h1 .glow-gradient {
+      background: linear-gradient(135deg, #FFFFFF 20%, #A5B4FC 60%, #38BDF8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-banner p {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* Interactive Upload Vault / Scanner Area */
+    .scanner-vault {
+      background: var(--bg-surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 38px 30px;
+      position: relative;
+      margin-bottom: 40px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    /* Cyber Corner Reticles */
+    .corner-reticle {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-color: var(--cyan-neon);
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .corner-tl { top: 14px; left: 14px; border-top: 2px solid; border-left: 2px solid; }
+    .corner-tr { top: 14px; right: 14px; border-top: 2px solid; border-right: 2px solid; }
+    .corner-bl { bottom: 14px; left: 14px; border-bottom: 2px solid; border-left: 2px solid; }
+    .corner-br { bottom: 14px; right: 14px; border-bottom: 2px solid; border-right: 2px solid; }
+
+    .dropzone-terminal {
+      border: 2px dashed rgba(129, 140, 248, 0.3);
+      border-radius: 20px;
+      padding: 44px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      background: rgba(14, 20, 36, 0.4);
+      position: relative;
+    }
+
+    .dropzone-terminal:hover, .dropzone-terminal.dragover {
+      border-color: var(--cyan-neon);
+      background: rgba(6, 182, 212, 0.05);
+      box-shadow: 0 0 35px rgba(6, 182, 212, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .upload-hologram-icon {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 18px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.2));
+      border: 1px solid var(--border-highlight);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cyan-neon);
+      box-shadow: 0 8px 30px rgba(6, 182, 212, 0.2);
+    }
+
+    .upload-hologram-icon svg {
+      width: 38px;
+      height: 38px;
+      stroke: currentColor;
+    }
+
+    .dropzone-terminal h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .dropzone-terminal p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .btn-cyber-browse {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #4F46E5, #06B6D4);
+      color: #FFF;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 13px 32px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 24px var(--primary-glow);
+      transition: all 0.2s ease;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-cyber-browse:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.5);
+    }
+
+    #fileInput { display: none; }
+
+    /* Video Preview & Laser Scan HUD */
+    .preview-vault {
+      display: none;
+      margin-top: 24px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .video-viewport {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #000;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      max-height: 340px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    video {
+      width: 100%;
+      max-height: 340px;
+      object-fit: contain;
+      outline: none;
+    }
+
+    /* Laser Scanner Beam (Active during Analysis) */
+    .scanning-laser {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--cyan-neon), #FFF, var(--cyan-neon), transparent);
+      box-shadow: 0 0 18px var(--cyan-neon), 0 0 35px var(--cyan-neon);
+      z-index: 10;
+      animation: laserSweep 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes laserSweep {
+      0% { top: 4%; }
+      100% { top: 96%; }
+    }
+
+    .file-spec-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+      padding: 10px 16px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+
+    .btn-fire-analysis {
+      width: 100%;
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(135deg, #6366F1, #06B6D4);
+      color: #FFF;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 8px 30px var(--primary-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: all 0.25s ease;
+      text-transform: uppercase;
+    }
+
+    .btn-fire-analysis:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px var(--cyan-glow);
+    }
+
+    .btn-fire-analysis:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Real-Time Processing Console */
+    .processing-console {
+      display: none;
+      margin: 24px 0;
+      padding: 24px;
+      background: rgba(6, 10, 20, 0.9);
+      border: 1px solid var(--border-highlight);
+      border-radius: 18px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .console-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--cyan-neon);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .console-stream {
+      font-size: 12px;
+      line-height: 1.8;
+      color: #CBD5E1;
+    }
+
+    .console-stream .active-line {
+      color: #38BDF8;
+      font-weight: 700;
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       RESULTS DASHBOARD
+    ───────────────────────────────────────────────────────────── */
+    .results-viewport {
+      display: none;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Top Verdict Banner */
+    .verdict-hero-card {
+      background: var(--bg-surface);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 38px 28px;
+      text-align: center;
+      border: 2px solid var(--border);
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .verdict-hero-card.real {
+      border-color: var(--real);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.1) 0%, rgba(14, 20, 36, 0.95) 100%);
+      box-shadow: 0 20px 60px var(--real-glow);
+    }
+
+    .verdict-hero-card.fake {
+      border-color: var(--fake);
+      background: linear-gradient(180deg, rgba(244, 63, 94, 0.1) 0%, rgba(14, 20, 36, 0.95) 100%);
+      box-shadow: 0 20px 60px var(--fake-glow);
+    }
+
+    .verdict-status-icon {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      margin: 0 auto 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid;
+    }
+
+    .verdict-hero-card.real .verdict-status-icon {
+      background: var(--real-soft);
+      border-color: var(--real);
+      color: var(--real);
+      box-shadow: 0 0 30px var(--real-glow);
+    }
+
+    .verdict-hero-card.fake .verdict-status-icon {
+      background: var(--fake-soft);
+      border-color: var(--fake);
+      color: var(--fake);
+      box-shadow: 0 0 30px var(--fake-glow);
+    }
+
+    .verdict-main-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(26px, 4.5vw, 38px);
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .verdict-hero-card.real .verdict-main-title { color: var(--real); }
+    .verdict-hero-card.fake .verdict-main-title { color: var(--fake); }
+
+    .verdict-file-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Overall Dual Probability Cards */
+    .gauge-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .gauge-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gauge-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .gauge-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .gauge-number {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 38px;
+      font-weight: 800;
+    }
+
+    .gauge-number.real { color: var(--real); }
+    .gauge-number.fake { color: var(--fake); }
+
+    .meter-track {
+      width: 100%;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 14px;
+    }
+
+    .meter-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .meter-fill.real {
+      background: linear-gradient(90deg, #059669, #10B981);
+      box-shadow: 0 0 16px var(--real-glow);
+    }
+
+    .meter-fill.fake {
+      background: linear-gradient(90deg, #E11D48, #F43F5E);
+      box-shadow: 0 0 16px var(--fake-glow);
+    }
+
+    /* 4 Neural Branches Grid */
+    .section-headline {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .branches-quad-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+
+    .neural-branch-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .neural-branch-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-highlight);
+    }
+
+    .branch-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .branch-identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .branch-glyph {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(99, 102, 241, 0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .branch-name-wrap strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFF;
+    }
+
+    .branch-name-wrap small {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .branch-status-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .branch-status-tag.real {
+      background: var(--real-soft);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: var(--real);
+    }
+
+    .branch-status-tag.fake {
+      background: var(--fake-soft);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: var(--fake);
+    }
+
+    .branch-details-text {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .branch-score-indicator {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       FINAL VERDICT & MULTIMODAL SYNTHESIS (AFTER ANALYZING ALL OVER)
+    ───────────────────────────────────────────────────────────── */
+    .final-comprehensive-card {
+      background: var(--bg-surface);
+      border-radius: 26px;
+      padding: 40px 30px;
+      text-align: center;
+      border: 2px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 40px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .final-comprehensive-card.real {
+      border-color: var(--real);
+      background: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.15) 0%, rgba(14, 20, 36, 0.98) 75%);
+      box-shadow: 0 0 50px var(--real-glow);
+    }
+
+    .final-comprehensive-card.fake {
+      border-color: var(--fake);
+      background: radial-gradient(circle at 50% 0%, rgba(244, 63, 94, 0.15) 0%, rgba(14, 20, 36, 0.98) 75%);
+      box-shadow: 0 0 50px var(--fake-glow);
+    }
+
+    .final-subtitle-pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      font-weight: 700;
+      color: var(--cyan-neon);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .giant-final-verdict-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 16px 42px;
+      border-radius: 40px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(24px, 5vw, 36px);
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      margin-bottom: 22px;
+      border: 2px solid;
+    }
+
+    .giant-final-verdict-pill.real {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--real);
+      color: var(--real);
+      box-shadow: 0 0 35px var(--real-glow);
+    }
+
+    .giant-final-verdict-pill.fake {
+      background: rgba(244, 63, 94, 0.2);
+      border-color: var(--fake);
+      color: var(--fake);
+      box-shadow: 0 0 35px var(--fake-glow);
+    }
+
+    .final-rationale-text {
+      font-size: 15.5px;
+      line-height: 1.7;
+      color: #E2E8F0;
+      max-width: 820px;
+      margin: 0 auto 28px;
+    }
+
+    /* 4 Audit Pillars */
+    .audit-pillars-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      max-width: 900px;
+      margin: 0 auto 30px;
+      text-align: left;
+    }
+
+    .audit-pillar-item {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .audit-pillar-item label {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .audit-pillar-item strong {
+      font-size: 13.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* History / Database Table */
+    .history-vault-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+    }
+
+    .history-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .history-top-row h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .btn-action-outline {
+      background: transparent;
+      border: 1px solid var(--border-highlight);
+      color: var(--text-muted);
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-action-outline:hover {
+      color: #FFF;
+      border-color: var(--cyan-neon);
+      background: rgba(6, 182, 212, 0.1);
+    }
+
+    .history-entries-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .history-row-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      transition: all 0.2s;
+    }
+
+    .history-row-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border-highlight);
+    }
+
+    .history-left-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .history-status-badge-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .history-status-badge-dot.real { background: var(--real-soft); color: var(--real); }
+    .history-status-badge-dot.fake { background: var(--fake-soft); color: var(--fake); }
+
+    .btn-icon-del {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      transition: color 0.2s;
+    }
+
+    .btn-icon-del:hover {
+      color: var(--fake);
+    }
+
+    @media (max-width: 768px) {
+      .gauge-grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; gap: 14px; align-items: flex-start; }
+      .audit-pillars-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Ambient Cyber Background -->
+<div class="ambient-bg">
+  <div class="ambient-grid"></div>
+  <div class="ambient-orb-1"></div>
+  <div class="ambient-orb-2"></div>
+</div>
+
+<div class="app-wrapper">
+  <!-- Top Bar -->
+  <header>
+    <div class="brand-wrap">
+      <div class="brand-logo-shield">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">DEEPGUARD <span>// AI</span> <div class="tag-defense">v1.0</div></div>
+        <div style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px;">Multimodal Audio-Visual & Temporal Defense Terminal</div>
+      </div>
+    </div>
+    <div class="header-status-pill">
+      <div class="pulse-indicator"></div>
+      <span>NEURAL ENGINE ONLINE</span>
+    </div>
+  </header>
+
+  <!-- Hero Headline -->
+  <div class="hero-banner">
+    <div class="hero-pretitle">Next-Gen Synthetic Media Forensic Engine</div>
+    <h1>Detect AI Deepfakes with <br/><span class="glow-gradient">Multimodal AI Defense</span></h1>
+    <p>Upload video content to perform simultaneous multi-branch forensics: MobileNetV3 visual artifacts, acoustic MFCC spectral analysis, attention-augmented lip synchronization, and temporal jitter LSTM.</p>
+  </div>
+
+  <!-- Upload & Terminal Scanner -->
+  <div class="scanner-vault" id="dropArea">
+    <div class="corner-reticle corner-tl"></div>
+    <div class="corner-reticle corner-tr"></div>
+    <div class="corner-reticle corner-bl"></div>
+    <div class="corner-reticle corner-br"></div>
+
+    <div class="dropzone-terminal" onclick="document.getElementById('fileInput').click()">
+      <div class="upload-hologram-icon">
+        <svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+      </div>
+      <h3>Drop Video Stream or Click to Browse</h3>
+      <p>Target formats: MP4, AVI, MOV, WebM, MKV (Up to 100MB)</p>
+      <button class="btn-cyber-browse" type="button">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+        Select Video File
+      </button>
+      <input type="file" id="fileInput" accept="video/mp4,video/avi,video/quicktime,video/webm,video/x-matroska"/>
+    </div>
+
+    <!-- Video Preview & Laser HUD -->
+    <div class="preview-vault" id="previewBox">
+      <div class="video-viewport">
+        <div class="scanning-laser" id="scanningLaser"></div>
+        <video id="videoPreview" controls></video>
+      </div>
+
+      <div class="file-spec-bar">
+        <span id="fileNamePreview" style="color: #FFF; font-weight: 700;">video.mp4</span>
+        <span id="fileSizePreview" style="color: var(--cyan-neon);">0.00 MB</span>
+      </div>
+
+      <button class="btn-fire-analysis" id="btnAnalyze" onclick="uploadAndAnalyze()">
+        <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+        Execute Multimodal AI Deepfake Forensics
+      </button>
+    </div>
+
+    <!-- Console Log Terminal -->
+    <div class="processing-console" id="processingConsole">
+      <div class="console-header">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10z"/></svg>
+        <span>LIVE MULTIMODAL INFERENCE STREAM</span>
+      </div>
+      <div class="console-stream" id="consoleStream">
+        <div>[SYSTEM] Initializing multimodal branches...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────
+       RESULTS DASHBOARD
+  ───────────────────────────────────────────────────────────── -->
+  <div class="results-viewport" id="resultsSection">
+
+    <!-- Top Banner -->
+    <div class="verdict-hero-card" id="verdictBanner">
+      <div class="verdict-status-icon" id="verdictIcon">
+        <svg width="42" height="42" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </div>
+      <div class="verdict-main-title" id="verdictTitle">AUTHENTIC VIDEO</div>
+      <div class="verdict-file-meta" id="verdictFile">sample.mp4 — Forensic scan completed in 0.45s</div>
+    </div>
+
+    <!-- Dual Overall Probability Gauges -->
+    <div class="gauge-grid">
+      <!-- Real Gauge -->
+      <div class="gauge-card">
+        <div class="gauge-header">
+          <span class="gauge-title">Authentic Media Probability</span>
+          <span style="color: var(--real); font-size: 18px;">🛡️</span>
+        </div>
+        <div class="gauge-number real" id="realProbVal">92.4%</div>
+        <div class="meter-track">
+          <div class="meter-fill real" id="realProbBar" style="width: 92.4%;"></div>
+        </div>
+      </div>
+
+      <!-- Fake Gauge -->
+      <div class="gauge-card">
+        <div class="gauge-header">
+          <span class="gauge-title">AI Manipulation Probability</span>
+          <span style="color: var(--fake); font-size: 18px;">⚠️</span>
+        </div>
+        <div class="gauge-number fake" id="fakeProbVal">7.6%</div>
+        <div class="meter-track">
+          <div class="meter-fill fake" id="fakeProbBar" style="width: 7.6%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Multimodal Neural Branches Breakdown -->
+    <div class="section-headline">
+      <span>🔬 Four-Pillar Neural Branch Decomposition</span>
+    </div>
+
+    <div class="branches-quad-grid">
+      <!-- Visual Branch -->
+      <div class="neural-branch-card">
+        <div class="branch-top">
+          <div class="branch-identity">
+            <div class="branch-glyph">👁️</div>
+            <div class="branch-name-wrap">
+              <strong>Visual Branch</strong>
+              <small>MobileNetV3 Deepfake</small>
+            </div>
+          </div>
+          <div class="branch-status-tag" id="visualPill">REAL</div>
+        </div>
+        <p class="branch-details-text">Detects face boundary warping, blending seams, and facial resolution artifacts.</p>
+        <div class="branch-score-indicator">
+          <span style="color: var(--text-dim);">Anomaly Score:</span>
+          <span id="visualScore" style="color: #FFF; font-weight: 700;">12.5%</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill fake" id="visualBar" style="width: 12.5%;"></div>
+        </div>
+      </div>
+
+      <!-- Audio Branch -->
+      <div class="neural-branch-card">
+        <div class="branch-top">
+          <div class="branch-identity">
+            <div class="branch-glyph">🎙️</div>
+            <div class="branch-name-wrap">
+              <strong>Audio Branch</strong>
+              <small>128-d MFCC Spectral MLP</small>
+            </div>
+          </div>
+          <div class="branch-status-tag" id="audioPill">REAL</div>
+        </div>
+        <p class="branch-details-text">Scans voice frequencies for vocoder artifacts, synthetic speech, and unnatural harmonics.</p>
+        <div class="branch-score-indicator">
+          <span style="color: var(--text-dim);">Anomaly Score:</span>
+          <span id="audioScore" style="color: #FFF; font-weight: 700;">8.2%</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill fake" id="audioBar" style="width: 8.2%;"></div>
+        </div>
+      </div>
+
+      <!-- Lip-Sync Branch -->
+      <div class="neural-branch-card">
+        <div class="branch-top">
+          <div class="branch-identity">
+            <div class="branch-glyph">👄</div>
+            <div class="branch-name-wrap">
+              <strong>Lip-Sync Branch</strong>
+              <small>Attention BiLSTM SyncNet</small>
+            </div>
+          </div>
+          <div class="branch-status-tag" id="lipSyncPill">REAL</div>
+        </div>
+        <p class="branch-details-text">Evaluates temporal synchrony between acoustic phonemes and visual mouth visemes.</p>
+        <div class="branch-score-indicator">
+          <span style="color: var(--text-dim);">Anomaly Score:</span>
+          <span id="lipSyncScore" style="color: #FFF; font-weight: 700;">15.0%</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill fake" id="lipSyncBar" style="width: 15.0%;"></div>
+        </div>
+      </div>
+
+      <!-- Temporal Branch -->
+      <div class="neural-branch-card">
+        <div class="branch-top">
+          <div class="branch-identity">
+            <div class="branch-glyph">⏳</div>
+            <div class="branch-name-wrap">
+              <strong>Temporal Branch</strong>
+              <small>Sequential LSTM Jitter</small>
+            </div>
+          </div>
+          <div class="branch-status-tag" id="temporalPill">REAL</div>
+        </div>
+        <p class="branch-details-text">Detects inter-frame flickering, pose discontinuity, and temporal motion jitter.</p>
+        <div class="branch-score-indicator">
+          <span style="color: var(--text-dim);">Anomaly Score:</span>
+          <span id="temporalScore" style="color: #FFF; font-weight: 700;">10.4%</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill fake" id="temporalBar" style="width: 10.4%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────
+         FINAL COMPREHENSIVE VERDICT CARD (AFTER ANALYZING ALL OVER)
+    ───────────────────────────────────────────────────────────── -->
+    <div class="final-comprehensive-card" id="finalDecisionCard">
+      <div class="final-subtitle-pre">🏁 MULTIMODAL CONSENSUS DECISION (ALL 4 BRANCHES SYNTHESIZED)</div>
+      
+      <div class="giant-final-verdict-pill" id="finalBadgeLarge">
+        FINAL VERDICT: REAL
+      </div>
+
+      <p class="final-rationale-text" id="finalSummaryText">
+        After analyzing all 4 AI branches (visual facial integrity, acoustic spectrogram, phoneme-viseme lip synchrony, and temporal sequence continuity), no deepfake manipulation traces were detected. This video is conclusively classified as AUTHENTIC / REAL with 92.4% probability.
+      </p>
+
+      <div class="audit-pillars-row">
+        <div class="audit-pillar-item">
+          <label>Visual Integrity</label>
+          <strong id="pillarVisual" style="color: var(--real);">✓ Clean / Authentic</strong>
+        </div>
+        <div class="audit-pillar-item">
+          <label>Acoustic Analysis</label>
+          <strong id="pillarAudio" style="color: var(--real);">✓ Natural Voice</strong>
+        </div>
+        <div class="audit-pillar-item">
+          <label>Lip-Sync Correlation</label>
+          <strong id="pillarLip" style="color: var(--real);">✓ Synchronized</strong>
+        </div>
+        <div class="audit-pillar-item">
+          <label>Temporal Motion</label>
+          <strong id="pillarTemporal" style="color: var(--real);">✓ Stable Continuity</strong>
+        </div>
+      </div>
+
+      <button class="btn-cyber-browse" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+        Analyze Another Video Stream
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Database Scan Vault -->
+  <div class="history-vault-card">
+    <div class="history-top-row">
+      <h3>📁 Forensic Database Scan History</h3>
+      <button class="btn-action-outline" onclick="loadHistory()">Refresh Records</button>
+    </div>
+    <div class="history-entries-list" id="historyList">
+      <div style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 24px;">
+        Loading forensic database...
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let selectedFile = null;
+
+  const fileInput = document.getElementById('fileInput');
+  const previewBox = document.getElementById('previewBox');
+  const videoPreview = document.getElementById('videoPreview');
+  const fileNamePreview = document.getElementById('fileNamePreview');
+  const fileSizePreview = document.getElementById('fileSizePreview');
+  const dropArea = document.getElementById('dropArea');
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length) handleFile(e.target.files[0]);
+  });
+
+  ['dragenter', 'dragover'].forEach(name => {
+    dropArea.addEventListener(name, (e) => {
+      e.preventDefault();
+      dropArea.classList.add('dragover');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(name => {
+    dropArea.addEventListener(name, (e) => {
+      e.preventDefault();
+      dropArea.classList.remove('dragover');
+    });
+  });
+
+  dropArea.addEventListener('drop', (e) => {
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+
+  function handleFile(file) {
+    selectedFile = file;
+    fileNamePreview.innerText = file.name;
+    fileSizePreview.innerText = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+    videoPreview.src = URL.createObjectURL(file);
+    previewBox.style.display = 'block';
+  }
+
+  // Upload and analyze
+  async function uploadAndAnalyze() {
+    if (!selectedFile) return;
+
+    const btnAnalyze = document.getElementById('btnAnalyze');
+    const scanningLaser = document.getElementById('scanningLaser');
+    const processingConsole = document.getElementById('processingConsole');
+    const consoleStream = document.getElementById('consoleStream');
+    const resultsSection = document.getElementById('resultsSection');
+
+    btnAnalyze.disabled = true;
+    scanningLaser.style.display = 'block';
+    processingConsole.style.display = 'block';
+    resultsSection.style.display = 'none';
+
+    const logSteps = [
+      "[01/05] Initializing PyTorch tensors & GPU/CPU dispatch...",
+      "[02/05] Visual Branch: Cropping 20 face frames & executing MobileNetV3...",
+      "[03/05] Audio Branch: Extracting 16kHz PCM & computing 128-d MFCCs...",
+      "[04/05] Lip-Sync & Temporal: Running SyncNet BiLSTM & inter-frame LSTM...",
+      "[05/05] Multimodal Fusion: Computing neural consensus decision..."
+    ];
+
+    consoleStream.innerHTML = '';
+    let step = 0;
+    const interval = setInterval(() => {
+      if (step < logSteps.length) {
+        const div = document.createElement('div');
+        div.className = 'active-line';
+        div.innerText = logSteps[step++];
+        consoleStream.appendChild(div);
+      }
+    }, 1800);
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const resp = await fetch('/analyze', {
+        method: 'POST',
+        body: formData
+      });
+
+      clearInterval(interval);
+      scanningLaser.style.display = 'none';
+      processingConsole.style.display = 'none';
+      btnAnalyze.disabled = false;
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        alert('Forensic analysis error: ' + (err.detail || 'Failed to analyze video'));
+        return;
+      }
+
+      const data = await resp.json();
+      displayResult(data);
+      loadHistory();
+    } catch (err) {
+      clearInterval(interval);
+      scanningLaser.style.display = 'none';
+      processingConsole.style.display = 'none';
+      btnAnalyze.disabled = false;
+      alert('Backend connection error: ' + err.message);
+    }
+  }
+
+  function displayResult(d) {
+    const resultsSection = document.getElementById('resultsSection');
+    const verdictBanner = document.getElementById('verdictBanner');
+    const verdictTitle = document.getElementById('verdictTitle');
+    const verdictFile = document.getElementById('verdictFile');
+    const verdictIcon = document.getElementById('verdictIcon');
+
+    const isFake = d.prediction.includes('AI-GENERATED') || d.ai_generated_probability >= 0.5;
+
+    verdictBanner.className = 'verdict-hero-card ' + (isFake ? 'fake' : 'real');
+    verdictTitle.innerText = isFake ? 'SYNTHETIC MEDIA / DEEPFAKE' : 'AUTHENTIC / UNALTERED VIDEO';
+    verdictFile.innerText = `${d.filename} — Processed in ${(d.processing_time_seconds || 0.45).toFixed(2)}s`;
+
+    if (isFake) {
+      verdictIcon.innerHTML = `<svg width="42" height="42" fill="currentColor" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>`;
+    } else {
+      verdictIcon.innerHTML = `<svg width="42" height="42" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+    }
+
+    // Probabilities
+    const realPct = (d.real_probability * 100).toFixed(1);
+    const fakePct = (d.ai_generated_probability * 100).toFixed(1);
+
+    document.getElementById('realProbVal').innerText = realPct + '%';
+    document.getElementById('realProbBar').style.width = realPct + '%';
+    document.getElementById('fakeProbVal').innerText = fakePct + '%';
+    document.getElementById('fakeProbBar').style.width = fakePct + '%';
+
+    // 4 Branches
+    setBranch('visual', d.visual_score);
+    setBranch('audio', d.audio_score);
+    setBranch('lipSync', d.lip_sync_score);
+    setBranch('temporal', d.temporal_score);
+
+    // Final Conclusion Card (After Analyzing All Over)
+    const finalCard = document.getElementById('finalDecisionCard');
+    const finalBadge = document.getElementById('finalBadgeLarge');
+    const finalSummary = document.getElementById('finalSummaryText');
+    const pVisual = document.getElementById('pillarVisual');
+    const pAudio = document.getElementById('pillarAudio');
+    const pLip = document.getElementById('pillarLip');
+    const pTemporal = document.getElementById('pillarTemporal');
+
+    finalCard.className = 'final-comprehensive-card ' + (isFake ? 'fake' : 'real');
+
+    if (isFake) {
+      finalBadge.className = 'giant-final-verdict-pill fake';
+      finalBadge.innerHTML = '⚠️ FINAL VERDICT: FAKE / DEEPFAKE';
+      finalSummary.innerText = `After synthesizing all four AI branches (MobileNetV3 facial artifact detection, MFCC acoustic speech modeling, SyncNet phoneme-viseme correlation, and sequential LSTM frame continuity), the Multimodal Fusion Model detected significant synthetic anomalies. This video is conclusively classified as AI-GENERATED / FAKE with ${fakePct}% confidence.`;
+    } else {
+      finalBadge.className = 'giant-final-verdict-pill real';
+      finalBadge.innerHTML = '✅ FINAL VERDICT: AUTHENTIC / REAL';
+      finalSummary.innerText = `After analyzing all four AI branches (visual facial integrity, acoustic spectrogram, phoneme-viseme lip synchrony, and temporal continuity), no deepfake manipulation traces were detected. This video is conclusively classified as AUTHENTIC / REAL with ${realPct}% confidence.`;
+    }
+
+    // Set individual pillar statuses
+    pVisual.innerText = d.visual_score < 0.5 ? '✓ Authentic (' + (d.visual_score * 100).toFixed(1) + '%)' : '⚠️ Manipulated (' + (d.visual_score * 100).toFixed(1) + '%)';
+    pVisual.style.color = d.visual_score < 0.5 ? 'var(--real)' : 'var(--fake)';
+
+    pAudio.innerText = d.audio_score < 0.5 ? '✓ Natural (' + (d.audio_score * 100).toFixed(1) + '%)' : '⚠️ Synthesized (' + (d.audio_score * 100).toFixed(1) + '%)';
+    pAudio.style.color = d.audio_score < 0.5 ? 'var(--real)' : 'var(--fake)';
+
+    pLip.innerText = d.lip_sync_score < 0.5 ? '✓ Synchronized (' + (d.lip_sync_score * 100).toFixed(1) + '%)' : '⚠️ Desynchronized (' + (d.lip_sync_score * 100).toFixed(1) + '%)';
+    pLip.style.color = d.lip_sync_score < 0.5 ? 'var(--real)' : 'var(--fake)';
+
+    pTemporal.innerText = d.temporal_score < 0.5 ? '✓ Smooth (' + (d.temporal_score * 100).toFixed(1) + '%)' : '⚠️ Frame Jitter (' + (d.temporal_score * 100).toFixed(1) + '%)';
+    pTemporal.style.color = d.temporal_score < 0.5 ? 'var(--real)' : 'var(--fake)';
+
+    resultsSection.style.display = 'block';
+    resultsSection.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function setBranch(prefix, score) {
+    const isFake = score >= 0.5;
+    const pill = document.getElementById(prefix + 'Pill');
+    const scoreEl = document.getElementById(prefix + 'Score');
+    const bar = document.getElementById(prefix + 'Bar');
+
+    const pct = (score * 100).toFixed(1);
+    pill.className = 'branch-status-tag ' + (isFake ? 'fake' : 'real');
+    pill.innerText = isFake ? 'SUSPICIOUS' : 'NORMAL';
+    scoreEl.innerText = pct + '%';
+    bar.style.width = pct + '%';
+    bar.className = 'meter-fill ' + (isFake ? 'fake' : 'real');
+  }
+
+  // Load history
+  async function loadHistory() {
+    const list = document.getElementById('historyList');
+    try {
+      const resp = await fetch('/history');
+      if (!resp.ok) return;
+      const items = await resp.json();
+
+      if (!items.length) {
+        list.innerHTML = `<div style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 24px;">No forensic scans logged in the database yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = items.map(item => {
+        const isFake = item.prediction.includes('AI-GENERATED') || item.ai_generated_probability >= 0.5;
+        const pct = (item.ai_generated_probability * 100).toFixed(1);
+        const icon = isFake 
+          ? `<svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>`
+          : `<svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+
+        return `
+          <div class="history-row-item">
+            <div class="history-left-group">
+              <div class="history-status-badge-dot ${isFake ? 'fake' : 'real'}">
+                ${icon}
+              </div>
+              <div>
+                <strong style="color: #FFF; font-size: 13.5px;">${item.filename}</strong>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim);">
+                  ${item.created_at ? new Date(item.created_at).toLocaleString() : 'Recent scan'}
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <span class="branch-status-tag ${isFake ? 'fake' : 'real'}">${isFake ? 'FAKE (' + pct + '%)' : 'REAL (' + (100 - pct).toFixed(1) + '%)'}</span>
+              <button class="btn-icon-del" title="Delete Scan" onclick="deleteHistory(${item.id})">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (_) {}
+  }
+
+  async function deleteHistory(id) {
+    if (!confirm('Permanently delete this forensic record?')) return;
+    try {
+      await fetch('/history/' + id, { method: 'DELETE' });
+      loadHistory();
+    } catch (e) {
+      alert('Failed to delete record');
+    }
+  }
+
+  loadHistory();
+</script>
+</body>
+</html>
