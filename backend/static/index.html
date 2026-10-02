@@ -1484,7 +1484,9 @@
     const consoleStream = document.getElementById('consoleStream');
     const resultsSection = document.getElementById('resultsSection');
 
+    const originalBtnHtml = btnAnalyze.innerHTML;
     btnAnalyze.disabled = true;
+    btnAnalyze.innerHTML = '⏳ ANALYZING FORENSICS... PLEASE WAIT';
     scanningLaser.style.display = 'block';
     processingConsole.style.display = 'block';
     resultsSection.style.display = 'none';
@@ -1499,18 +1501,30 @@
 
     consoleStream.innerHTML = '';
     let step = 0;
+    let secondsElapsed = 0;
+
     const interval = setInterval(() => {
+      secondsElapsed += 1;
       if (step < logSteps.length) {
         const div = document.createElement('div');
         div.className = 'active-line';
         div.innerText = logSteps[step++];
         consoleStream.appendChild(div);
+      } else {
+        let waitLine = document.getElementById('cloudWaitLine');
+        if (!waitLine) {
+          waitLine = document.createElement('div');
+          waitLine.id = 'cloudWaitLine';
+          waitLine.style.color = '#38BDF8';
+          waitLine.style.fontWeight = '600';
+          consoleStream.appendChild(waitLine);
+        }
+        waitLine.innerText = `[⏳] Processing deep learning inference on cloud CPU... (${secondsElapsed}s elapsed)`;
       }
-    }, 700);
+    }, 1000);
 
     const formData = new FormData();
     formData.append('file', selectedFile);
-
 
     try {
       const resp = await fetch('/analyze', {
@@ -1522,6 +1536,7 @@
       scanningLaser.style.display = 'none';
       processingConsole.style.display = 'none';
       btnAnalyze.disabled = false;
+      btnAnalyze.innerHTML = originalBtnHtml;
 
       if (!resp.ok) {
         const err = await resp.json();
@@ -1537,6 +1552,7 @@
       scanningLaser.style.display = 'none';
       processingConsole.style.display = 'none';
       btnAnalyze.disabled = false;
+      btnAnalyze.innerHTML = originalBtnHtml;
       alert('Backend connection error: ' + err.message);
     }
   }
@@ -1548,7 +1564,7 @@
     const verdictFile = document.getElementById('verdictFile');
     const verdictIcon = document.getElementById('verdictIcon');
 
-    const isFake = d.prediction.includes('AI-GENERATED') || d.ai_generated_probability >= 0.5;
+    const isFake = (d.prediction && d.prediction.includes('AI-GENERATED')) || (d.ai_generated_probability >= 0.5);
 
     verdictBanner.className = 'verdict-hero-card ' + (isFake ? 'fake' : 'real');
     verdictTitle.innerText = isFake ? 'SYNTHETIC MEDIA / DEEPFAKE' : 'AUTHENTIC / UNALTERED VIDEO';
@@ -1561,8 +1577,8 @@
     }
 
     // Probabilities
-    const realPct = (d.real_probability * 100).toFixed(1);
-    const fakePct = (d.ai_generated_probability * 100).toFixed(1);
+    const realPct = ((d.real_probability ?? 0.5) * 100).toFixed(1);
+    const fakePct = ((d.ai_generated_probability ?? 0.5) * 100).toFixed(1);
 
     document.getElementById('realProbVal').innerText = realPct + '%';
     document.getElementById('realProbBar').style.width = realPct + '%';
@@ -1570,10 +1586,10 @@
     document.getElementById('fakeProbBar').style.width = fakePct + '%';
 
     // 4 Branches
-    setBranch('visual', d.visual_score);
-    setBranch('audio', d.audio_score);
-    setBranch('lipSync', d.lip_sync_score);
-    setBranch('temporal', d.temporal_score);
+    setBranch('visual', d.visual_score ?? 0.5);
+    setBranch('audio', d.audio_score ?? 0.5);
+    setBranch('lipSync', d.lip_sync_score ?? 0.5);
+    setBranch('temporal', d.temporal_score ?? 0.5);
 
     // Final Conclusion Card (After Analyzing All Over)
     const finalCard = document.getElementById('finalDecisionCard');
@@ -1597,20 +1613,27 @@
     }
 
     // Set individual pillar statuses
-    pVisual.innerText = d.visual_score < 0.5 ? '✓ Authentic (' + (d.visual_score * 100).toFixed(1) + '%)' : '⚠️ Manipulated (' + (d.visual_score * 100).toFixed(1) + '%)';
-    pVisual.style.color = d.visual_score < 0.5 ? 'var(--real)' : 'var(--fake)';
+    const vScore = d.visual_score ?? 0.5;
+    const aScore = d.audio_score ?? 0.5;
+    const lScore = d.lip_sync_score ?? 0.5;
+    const tScore = d.temporal_score ?? 0.5;
 
-    pAudio.innerText = d.audio_score < 0.5 ? '✓ Natural (' + (d.audio_score * 100).toFixed(1) + '%)' : '⚠️ Synthesized (' + (d.audio_score * 100).toFixed(1) + '%)';
-    pAudio.style.color = d.audio_score < 0.5 ? 'var(--real)' : 'var(--fake)';
+    pVisual.innerText = vScore < 0.5 ? '✓ Authentic (' + (vScore * 100).toFixed(1) + '%)' : '⚠️ Manipulated (' + (vScore * 100).toFixed(1) + '%)';
+    pVisual.style.color = vScore < 0.5 ? 'var(--real)' : 'var(--fake)';
 
-    pLip.innerText = d.lip_sync_score < 0.5 ? '✓ Synchronized (' + (d.lip_sync_score * 100).toFixed(1) + '%)' : '⚠️ Desynchronized (' + (d.lip_sync_score * 100).toFixed(1) + '%)';
-    pLip.style.color = d.lip_sync_score < 0.5 ? 'var(--real)' : 'var(--fake)';
+    pAudio.innerText = aScore < 0.5 ? '✓ Natural (' + (aScore * 100).toFixed(1) + '%)' : '⚠️ Synthesized (' + (aScore * 100).toFixed(1) + '%)';
+    pAudio.style.color = aScore < 0.5 ? 'var(--real)' : 'var(--fake)';
 
-    pTemporal.innerText = d.temporal_score < 0.5 ? '✓ Smooth (' + (d.temporal_score * 100).toFixed(1) + '%)' : '⚠️ Frame Jitter (' + (d.temporal_score * 100).toFixed(1) + '%)';
-    pTemporal.style.color = d.temporal_score < 0.5 ? 'var(--real)' : 'var(--fake)';
+    pLip.innerText = lScore < 0.5 ? '✓ Synchronized (' + (lScore * 100).toFixed(1) + '%)' : '⚠️ Desynchronized (' + (lScore * 100).toFixed(1) + '%)';
+    pLip.style.color = lScore < 0.5 ? 'var(--real)' : 'var(--fake)';
+
+    pTemporal.innerText = tScore < 0.5 ? '✓ Smooth (' + (tScore * 100).toFixed(1) + '%)' : '⚠️ Frame Jitter (' + (tScore * 100).toFixed(1) + '%)';
+    pTemporal.style.color = tScore < 0.5 ? 'var(--real)' : 'var(--fake)';
 
     resultsSection.style.display = 'block';
-    resultsSection.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   }
 
   function setBranch(prefix, score) {
@@ -1628,27 +1651,30 @@
   }
 
   // Load history
+  window.cachedHistory = [];
+
   async function loadHistory() {
     const list = document.getElementById('historyList');
     try {
       const resp = await fetch('/history');
       if (!resp.ok) return;
       const items = await resp.json();
+      window.cachedHistory = items;
 
       if (!items.length) {
         list.innerHTML = `<div style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 24px;">No forensic scans logged in the database yet.</div>`;
         return;
       }
 
-      list.innerHTML = items.map(item => {
-        const isFake = item.prediction.includes('AI-GENERATED') || item.ai_generated_probability >= 0.5;
-        const pct = (item.ai_generated_probability * 100).toFixed(1);
+      list.innerHTML = items.map((item, idx) => {
+        const isFake = (item.prediction && item.prediction.includes('AI-GENERATED')) || (item.ai_generated_probability >= 0.5);
+        const pct = ((item.ai_generated_probability ?? 0.5) * 100).toFixed(1);
         const icon = isFake 
           ? `<svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>`
           : `<svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
 
         return `
-          <div class="history-row-item">
+          <div class="history-row-item" onclick="viewHistoryItem(${idx})" style="cursor: pointer;" title="Click to view detailed report">
             <div class="history-left-group">
               <div class="history-status-badge-dot ${isFake ? 'fake' : 'real'}">
                 ${icon}
@@ -1656,13 +1682,13 @@
               <div>
                 <strong style="color: #FFF; font-size: 13.5px;">${item.filename}</strong>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim);">
-                  ${item.created_at ? new Date(item.created_at).toLocaleString() : 'Recent scan'}
+                  ${item.created_at ? new Date(item.created_at).toLocaleString() : 'Recent scan'} • <span style="color: #38BDF8;">Click to view report</span>
                 </div>
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 14px;">
               <span class="branch-status-tag ${isFake ? 'fake' : 'real'}">${isFake ? 'FAKE (' + pct + '%)' : 'REAL (' + (100 - pct).toFixed(1) + '%)'}</span>
-              <button class="btn-icon-del" title="Delete Scan" onclick="deleteHistory(${item.id})">
+              <button class="btn-icon-del" title="Delete Scan" onclick="event.stopPropagation(); deleteHistory(${item.id})">
                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
               </button>
             </div>
@@ -1670,6 +1696,12 @@
         `;
       }).join('');
     } catch (_) {}
+  }
+
+  function viewHistoryItem(idx) {
+    if (window.cachedHistory && window.cachedHistory[idx]) {
+      displayResult(window.cachedHistory[idx]);
+    }
   }
 
   async function deleteHistory(id) {
